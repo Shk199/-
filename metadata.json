@@ -1,0 +1,6 @@
+{
+  "name": "راقب",
+  "description": "المرافق الرقمي للتزكية والرقابة الذاتية وتتبع العبادات وبناء الأخلاق",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
