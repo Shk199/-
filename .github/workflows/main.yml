@@ -1,15 +1,52 @@
-nam      # 4. تثبيت المكتبات من داخل المجلد الفرعي
-      - name: Install Dependencies
-        working-directory: ./your_folder_name
-        run: flutter pub get
+name: Build Android APK
 
-      # 5. بناء ملف الـ APK من داخل المجلد الفرعي
-      - name: Build APK
-        working-directory: ./your_folder_name
-        run: flutter build apk --release
-              - name: Upload APK Artifact
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. سحب الكود من المستودع
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. تثبيت JDK 17 (الإصدار المطلوب لأحدث أدوات بناء Android)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. تفعيل التخزين المؤقت لملفات Gradle لتسريع عمليات البناء القادمة
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # 4. منح صلاحية التنفيذ لملف gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 5. بناء ملف الـ APK بصيغة release
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      # 6. رفع ملف الـ APK الناتج كمخرج (Artifact) يمكن تحميله من صفحة الـ Run
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: your_folder_name/build/app/outputs/flutter-apk/app-release.apk
-          
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
